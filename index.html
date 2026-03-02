@@ -7,17 +7,21 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/monokai.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@500;600&display=swap" rel="stylesheet">
 
     <style>
-        /* テーマごとのカラーパレット定義 */
+        /* テーマごとのカラーパレット定義（エディタ部分は常にダーク） */
         :root {
-            /* ライトモード（デフォルト） */
+            /* ライトモード */
             --bg-color: #f8f9fa;
             --text-color: #333333;
             --header-bg: #ffffff;
             --border-color: #cccccc;
             --btn-bg: #0d6efd;
             --btn-hover: #0b5ed7;
+            --btn-paste-bg: #6c757d;
+            --btn-paste-hover: #5c636a;
             --select-bg: #ffffff;
             --select-text: #333333;
         }
@@ -30,6 +34,8 @@
             --border-color: #333333;
             --btn-bg: #007acc;
             --btn-hover: #005999;
+            --btn-paste-bg: #4d4d4d;
+            --btn-paste-hover: #666666;
             --select-bg: #3c3c3c;
             --select-text: #cccccc;
         }
@@ -83,14 +89,18 @@
             flex-grow: 1;
             position: relative;
             min-height: 0; 
+            /* エディタ周辺の背景を暗く統一 */
+            background-color: #272822; 
         }
 
+        /* エディタフォントとスタイルの調整 */
         .CodeMirror {
             height: 100%;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 14px;
+            /* InconsolataとMenloを指定し、少し太字(500)に */
+            font-family: 'Inconsolata', 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-weight: 500;
+            font-size: 15px;
             line-height: 1.6;
-            /* ライトモード時のデフォルトボーダー（ダーク時はMonokai側で吸収） */
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -99,15 +109,16 @@
             padding: 12px 16px;
             background-color: var(--header-bg);
             border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px; /* ボタン間の余白 */
             transition: background-color 0.3s, border-color 0.3s;
         }
 
-        /* プレビューボタン */
+        /* 共通ボタンスタイル */
         button { 
-            width: 100%; 
+            flex: 1; /* スマホでは均等に2分割 */
             padding: 14px 20px; 
             cursor: pointer; 
-            background-color: var(--btn-bg);
             color: white; 
             border: none; 
             border-radius: 4px; 
@@ -116,8 +127,18 @@
             transition: background-color 0.2s;
         }
 
-        button:hover { 
-            background-color: var(--btn-hover); 
+        .btn-paste {
+            background-color: var(--btn-paste-bg);
+        }
+        .btn-paste:hover {
+            background-color: var(--btn-paste-hover);
+        }
+
+        .btn-preview {
+            background-color: var(--btn-bg);
+        }
+        .btn-preview:hover {
+            background-color: var(--btn-hover);
         }
 
         /* PC向けのメディアクエリ */
@@ -126,8 +147,8 @@
             header { background-color: transparent; border: none; padding: 0 0 10px 0; }
             h1 { font-size: 1.5rem; }
             #editor-wrapper { border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; }
-            .controls { background-color: transparent; border: none; padding: 15px 0 0 0; }
-            button { width: auto; float: right; } 
+            .controls { background-color: transparent; border: none; padding: 15px 0 0 0; justify-content: flex-end; }
+            button { flex: none; width: auto; } /* PCでは内容に合わせた幅に */
         }
     </style>
 </head>
@@ -136,7 +157,7 @@
     <header>
         <h1>HTML Viewer</h1>
         <select id="theme-selector" onchange="handleThemeChange(this.value)">
-            <option value="system">システム設定に従う</option>
+            <option value="system">デフォルトモード</option>
             <option value="light">ライトモード</option>
             <option value="dark">ダークモード</option>
         </select>
@@ -147,7 +168,8 @@
     </div>
 
     <div class="controls">
-        <button onclick="previewHTML()">新しいタブでプレビュー</button>
+        <button class="btn-paste" onclick="pasteCode()">ペーストして上書き</button>
+        <button class="btn-preview" onclick="previewHTML()">新しいタブでプレビュー</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
@@ -157,9 +179,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
 
     <script>
-        // エディタの初期化
+        // エディタの初期化（常にMonokaiテーマを使用）
         const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
             mode: 'htmlmixed',
+            theme: 'monokai',
             lineNumbers: true,
             matchBrackets: true,
             indentUnit: 4,
@@ -172,20 +195,16 @@
 
         function applyTheme(theme) {
             let isDark = false;
-
             if (theme === 'system') {
                 isDark = mediaQuery.matches;
             } else {
                 isDark = (theme === 'dark');
             }
-
-            // UI全体のテーマを切り替え
+            // UI全体のテーマを切り替え（エディタ部分は常にダークで固定）
             if (isDark) {
                 document.documentElement.setAttribute('data-theme', 'dark');
-                editor.setOption('theme', 'monokai');
             } else {
                 document.documentElement.removeAttribute('data-theme');
-                editor.setOption('theme', 'default');
             }
         }
 
@@ -194,29 +213,38 @@
             applyTheme(value);
         }
 
-        // OSのテーマ設定が変更されたときのイベントリスナー
         mediaQuery.addEventListener('change', () => {
             if (themeSelector.value === 'system') {
                 applyTheme('system');
             }
         });
 
-        // ページ読み込み時の初期化処理
         window.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('htmlViewerTheme') || 'system';
             themeSelector.value = savedTheme;
             applyTheme(savedTheme);
         });
 
-        // プレビュー実行関数
+        // クリップボードからペーストする処理
+        async function pasteCode() {
+            try {
+                // クリップボードのテキストを読み込み
+                const text = await navigator.clipboard.readText();
+                // エディタの内容を上書き
+                editor.setValue(text);
+            } catch (err) {
+                console.error('ペースト失敗: ', err);
+                alert("クリップボードの読み取りが許可されていないか、対応していない環境です。\n手動でペースト (Ctrl+V / Cmd+V または長押し) してください。");
+            }
+        }
+
+        // プレビュー実行処理
         function previewHTML() {
             const code = editor.getValue();
-            
             if (!code.trim()) {
                 alert("コードが入力されていません。");
                 return;
             }
-
             const blob = new Blob([code], { type: 'text/html' });
             const blobUrl = URL.createObjectURL(blob);
             window.open(blobUrl, '_blank');
