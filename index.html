@@ -11,77 +11,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@500;600&display=swap" rel="stylesheet">
 
     <style>
-        /* テーマごとのカラーパレット定義（エディタ部分は常にダーク） */
-        :root {
-            /* ライトモード */
-            --bg-color: #f8f9fa;
-            --text-color: #333333;
-            --header-bg: #ffffff;
-            --border-color: #cccccc;
-            --btn-bg: #0d6efd;
-            --btn-hover: #0b5ed7;
-            --btn-paste-bg: #6c757d;
-            --btn-paste-hover: #5c636a;
-            --select-bg: #ffffff;
-            --select-text: #333333;
-        }
-
-        [data-theme="dark"] {
-            /* ダークモード */
-            --bg-color: #1e1e1e;
-            --text-color: #cccccc;
-            --header-bg: #252526;
-            --border-color: #333333;
-            --btn-bg: #007acc;
-            --btn-hover: #005999;
-            --btn-paste-bg: #4d4d4d;
-            --btn-paste-hover: #666666;
-            --select-bg: #3c3c3c;
-            --select-text: #cccccc;
-        }
-
-        /* 全体のリセットとベース設定 */
+        /* 全体のリセットとベース設定（ダークモード固定） */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: #1e1e1e;
+            color: #cccccc;
             margin: 0;
             display: flex;
             flex-direction: column;
             height: 100vh; 
             height: 100dvh; 
             box-sizing: border-box;
-            transition: background-color 0.3s, color 0.3s;
         }
 
         /* ヘッダー領域 */
         header {
             padding: 12px 16px;
-            background-color: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
+            background-color: #252526;
+            border-bottom: 1px solid #333333;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            transition: background-color 0.3s, border-color 0.3s;
         }
 
         h1 { 
             font-size: 1.1rem; 
             font-weight: 600;
             margin: 0;
-            color: var(--text-color);
-        }
-
-        /* テーマセレクター */
-        select#theme-selector {
-            padding: 6px 10px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            background-color: var(--select-bg);
-            color: var(--select-text);
-            font-size: 0.9rem;
-            cursor: pointer;
-            outline: none;
+            color: #cccccc;
         }
 
         /* エディタ領域のラッパー */
@@ -89,34 +45,31 @@
             flex-grow: 1;
             position: relative;
             min-height: 0; 
-            /* エディタ周辺の背景を暗く統一 */
             background-color: #272822; 
         }
 
         /* エディタフォントとスタイルの調整 */
         .CodeMirror {
             height: 100%;
-            /* InconsolataとMenloを指定し、少し太字(500)に */
             font-family: 'Inconsolata', 'Menlo', 'Monaco', 'Consolas', monospace;
             font-weight: 500;
             font-size: 15px;
             line-height: 1.6;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #333333;
         }
 
         /* フッター（ボタン領域） */
         .controls { 
             padding: 12px 16px;
-            background-color: var(--header-bg);
-            border-top: 1px solid var(--border-color);
+            background-color: #252526;
+            border-top: 1px solid #333333;
             display: flex;
-            gap: 10px; /* ボタン間の余白 */
-            transition: background-color 0.3s, border-color 0.3s;
+            gap: 10px;
         }
 
         /* 共通ボタンスタイル */
         button { 
-            flex: 1; /* スマホでは均等に2分割 */
+            flex: 1; 
             padding: 14px 20px; 
             cursor: pointer; 
             color: white; 
@@ -128,27 +81,27 @@
         }
 
         .btn-paste {
-            background-color: var(--btn-paste-bg);
+            background-color: #4d4d4d;
         }
         .btn-paste:hover {
-            background-color: var(--btn-paste-hover);
+            background-color: #666666;
         }
 
         .btn-preview {
-            background-color: var(--btn-bg);
+            background-color: #007acc;
         }
         .btn-preview:hover {
-            background-color: var(--btn-hover);
+            background-color: #005999;
         }
 
         /* PC向けのメディアクエリ */
         @media (min-width: 768px) {
-            body { padding: 20px; background-color: var(--bg-color); }
+            body { padding: 20px; background-color: #121212; }
             header { background-color: transparent; border: none; padding: 0 0 10px 0; }
             h1 { font-size: 1.5rem; }
-            #editor-wrapper { border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; }
+            #editor-wrapper { border: 1px solid #333333; border-radius: 6px; overflow: hidden; }
             .controls { background-color: transparent; border: none; padding: 15px 0 0 0; justify-content: flex-end; }
-            button { flex: none; width: auto; } /* PCでは内容に合わせた幅に */
+            button { flex: none; width: 120px; } /* PCでは固定幅に */
         }
     </style>
 </head>
@@ -156,11 +109,6 @@
 
     <header>
         <h1>HTML Viewer</h1>
-        <select id="theme-selector" onchange="handleThemeChange(this.value)">
-            <option value="system">デフォルトモード</option>
-            <option value="light">ライトモード</option>
-            <option value="dark">ダークモード</option>
-        </select>
     </header>
 
     <div id="editor-wrapper">
@@ -168,8 +116,8 @@
     </div>
 
     <div class="controls">
-        <button class="btn-paste" onclick="pasteCode()">ペーストして上書き</button>
-        <button class="btn-preview" onclick="previewHTML()">新しいタブでプレビュー</button>
+        <button class="btn-paste" onclick="pasteCode()">ペースト</button>
+        <button class="btn-preview" onclick="previewHTML()">プレビュー</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
@@ -179,7 +127,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
 
     <script>
-        // エディタの初期化（常にMonokaiテーマを使用）
+        // エディタの初期化
         const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
             mode: 'htmlmixed',
             theme: 'monokai',
@@ -189,48 +137,10 @@
             placeholder: ""
         });
 
-        // テーマ管理のロジック
-        const themeSelector = document.getElementById('theme-selector');
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-        function applyTheme(theme) {
-            let isDark = false;
-            if (theme === 'system') {
-                isDark = mediaQuery.matches;
-            } else {
-                isDark = (theme === 'dark');
-            }
-            // UI全体のテーマを切り替え（エディタ部分は常にダークで固定）
-            if (isDark) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-            }
-        }
-
-        function handleThemeChange(value) {
-            localStorage.setItem('htmlViewerTheme', value);
-            applyTheme(value);
-        }
-
-        mediaQuery.addEventListener('change', () => {
-            if (themeSelector.value === 'system') {
-                applyTheme('system');
-            }
-        });
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('htmlViewerTheme') || 'system';
-            themeSelector.value = savedTheme;
-            applyTheme(savedTheme);
-        });
-
         // クリップボードからペーストする処理
         async function pasteCode() {
             try {
-                // クリップボードのテキストを読み込み
                 const text = await navigator.clipboard.readText();
-                // エディタの内容を上書き
                 editor.setValue(text);
             } catch (err) {
                 console.error('ペースト失敗: ', err);
