@@ -51,11 +51,23 @@
         /* エディタフォントとスタイルの調整 */
         .CodeMirror {
             height: 100%;
-            font-family: 'Inconsolata', 'Menlo', 'Monaco', 'Consolas', monospace;
+            /* Menloをデフォルトに設定 */
+            font-family: 'Menlo', 'Inconsolata', 'Monaco', 'Consolas', monospace;
             font-weight: 500;
             font-size: 15px;
             line-height: 1.6;
             border-bottom: 1px solid #333333;
+        }
+
+        /* 行番号の文字色を暗いグレーに変更 */
+        .CodeMirror-linenumber {
+            color: #666666 !important;
+        }
+
+        /* 行番号エリア（ガター）の背景と境界線を調整して固定感を強調 */
+        .CodeMirror-gutters {
+            background-color: #1e1e1e !important;
+            border-right: 1px solid #444444 !important;
         }
 
         /* フッター（ボタン領域） */
@@ -101,7 +113,7 @@
             h1 { font-size: 1.5rem; }
             #editor-wrapper { border: 1px solid #333333; border-radius: 6px; overflow: hidden; }
             .controls { background-color: transparent; border: none; padding: 15px 0 0 0; justify-content: flex-end; }
-            button { flex: none; width: 120px; } /* PCでは固定幅に */
+            button { flex: none; width: 120px; } 
         }
     </style>
 </head>
